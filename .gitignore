@@ -1,9 +1,12 @@
 node_modules/
 dist/
+test.txt
 .env
 *.local
 *.sqlite
 *.sqlite3
 *.db
+tmp/
+uploads/
 ould/
 *.zip

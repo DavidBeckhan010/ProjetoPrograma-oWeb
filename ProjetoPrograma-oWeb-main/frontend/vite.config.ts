@@ -10,6 +10,9 @@ export default defineConfig({
     },
   },
   server: {
+    proxy: {
+      '/uploads': 'http://localhost:3333',
+    },
     fs: {
       allow: ['..'],
     },

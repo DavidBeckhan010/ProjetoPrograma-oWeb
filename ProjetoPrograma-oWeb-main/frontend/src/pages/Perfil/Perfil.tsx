@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { listServices } from '@db/database'
+import { getProviderReviews, listServices, updateUserProfile } from '@db/database'
 import { useAuth } from '../../contexts/AuthContext'
-import type { Service } from '../../types'
+import type { Review, Service } from '../../types'
 import NavBar from '../../components/NavBar/NavBar'
 import styles from './Perfil.module.css'
 
@@ -14,8 +14,32 @@ function getNivel(serviceCount: number) {
 
 export default function Perfil() {
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { user, token, updateUser } = useAuth()
   const [services, setServices] = useState<Service[]>([])
+  const [reviews, setReviews] = useState<Review[]>([])
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleProfileImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !token) return
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('A imagem deve ter no máximo 5MB.')
+      return
+    }
+
+    setUploading(true)
+    const formData = new FormData()
+    formData.append('profileImage', file)
+
+    const updated = await updateUserProfile(formData, token)
+    setUploading(false)
+
+    if (updated) {
+      updateUser(updated)
+    }
+  }
 
   useEffect(() => {
     if (user) {
@@ -23,6 +47,9 @@ export default function Perfil() {
         const mine = all.filter(s => s.provider_id === user.id)
         setServices(mine)
       })
+      if (user.role === 'prestador') {
+        getProviderReviews(user.id).then(setReviews)
+      }
     }
   }, [user])
 
@@ -58,7 +85,23 @@ export default function Perfil() {
 
         <div className={styles.card}>
           <div className={styles.profileRow}>
-            <div className={styles.avatar}>{user.name.charAt(0).toUpperCase()}</div>
+            <div className={styles.avatar} onClick={() => fileInputRef.current?.click()}>
+              {user.profileImageUrl ? (
+                <img className={styles.avatarImg} src={user.profileImageUrl} alt={user.name} />
+              ) : (
+                user.name.charAt(0).toUpperCase()
+              )}
+              <div className={styles.avatarOverlay}>
+                {uploading ? '...' : '📷'}
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                className={styles.uploadHidden}
+                onChange={handleProfileImageUpload}
+              />
+            </div>
             <div className={styles.profileInfo}>
               <span className={styles.verifiedBadge}>
                 <span className={styles.checkIcon}>✓</span> CONTA VERIFICADA
@@ -122,7 +165,15 @@ export default function Perfil() {
           <div className={styles.serviceList}>
             {services.map(s => (
               <div key={s.id} className={styles.serviceCard} onClick={() => navigate(`/produtos/${s.id}`)}>
-                <div className={styles.serviceCircle}>{s.name.charAt(0).toUpperCase()}</div>
+                <div className={styles.serviceCircle}>
+                  {s.imageUrls && s.imageUrls.length > 0 ? (
+                    <img className={styles.serviceCircleImg} src={s.imageUrls[0]} alt={s.name} />
+                  ) : s.imageUrl ? (
+                    <img className={styles.serviceCircleImg} src={s.imageUrl} alt={s.name} />
+                  ) : (
+                    s.name.charAt(0).toUpperCase()
+                  )}
+                </div>
                 <div className={styles.serviceInfo}>
                   <p className={styles.serviceName}>{s.name}</p>
                   <p className={styles.servicePrice}>R$ {s.price.toFixed(2).replace('.', ',')}</p>
@@ -130,6 +181,30 @@ export default function Perfil() {
               </div>
             ))}
           </div>
+        )}
+
+        {user.role === 'prestador' && reviews.length > 0 && (
+          <>
+            <div className={styles.sectionTitle}>Avaliações ({reviews.length})</div>
+            <div className={styles.reviewList}>
+              {reviews.map((r) => (
+                <div key={r.id} className={styles.reviewCard}>
+                  <div className={styles.reviewHeader}>
+                    <span className={styles.reviewAuthor}>{r.clientName}</span>
+                    <span className={styles.reviewStars}>
+                      {[1, 2, 3, 4, 5].map((i) => (
+                        <span key={i} className={i <= r.rating ? styles.starFilled : styles.starEmpty}>★</span>
+                      ))}
+                    </span>
+                  </div>
+                  {r.comment && <p className={styles.reviewComment}>{r.comment}</p>}
+                  <span className={styles.reviewDate}>
+                    {new Date(r.createdAt).toLocaleDateString('pt-BR')}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
     </div>

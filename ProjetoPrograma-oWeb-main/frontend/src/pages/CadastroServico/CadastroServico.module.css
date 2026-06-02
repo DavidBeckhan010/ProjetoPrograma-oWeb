@@ -246,6 +246,14 @@
   display: none;
 }
 
+/* ── Preview Grid ── */
+.previewGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
 /* ── Upload Preview ── */
 .uploadPreview {
   display: flex;

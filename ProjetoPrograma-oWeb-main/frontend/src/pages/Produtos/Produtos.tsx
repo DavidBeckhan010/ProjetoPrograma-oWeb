@@ -145,9 +145,23 @@ export default function Produtos() {
                   onClick={() => navigate(`/produtos/${item.id}`)}
                   style={{ animationDelay: `${i * 0.05}s` }}
                 >
-                  <div className={styles.cardTop}>
-                    <div className={styles.cardIcon}>{getCategoryIcon(item.name)}</div>
-                  </div>
+                  {item.imageUrls && item.imageUrls.length > 0 ? (
+                    <img
+                      className={styles.cardImage}
+                      src={item.imageUrls[0]}
+                      alt={item.name}
+                    />
+                  ) : item.imageUrl ? (
+                    <img
+                      className={styles.cardImage}
+                      src={item.imageUrl}
+                      alt={item.name}
+                    />
+                  ) : (
+                    <div className={styles.cardTop}>
+                      <div className={styles.cardIcon}>{getCategoryIcon(item.name)}</div>
+                    </div>
+                  )}
 
                   <h3 className={styles.cardName}>{item.name}</h3>
                   <p className={styles.cardDesc}>

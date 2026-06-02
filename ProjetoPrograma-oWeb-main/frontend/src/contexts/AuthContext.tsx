@@ -3,8 +3,10 @@ import type { User } from '../types'
 
 interface AuthContextType {
   user: User | null
-  login: (user: User) => void
+  token: string | null
+  login: (user: User, token: string) => void
   logout: () => void
+  updateUser: (user: User) => void
   isPrestador: boolean
   isAdmin: boolean
   isPrestadorPendente: boolean
@@ -13,11 +15,16 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null)
 
 const USER_KEY = 'conectserv_user'
+const TOKEN_KEY = 'conectserv_token'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(() => {
     const saved = localStorage.getItem(USER_KEY)
     return saved ? JSON.parse(saved) : null
+  })
+
+  const [token, setToken] = useState<string | null>(() => {
+    return localStorage.getItem(TOKEN_KEY)
   })
 
   useEffect(() => {
@@ -28,11 +35,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [user])
 
-  const login = (u: User) => setUser(u)
-  const logout = () => setUser(null)
+  useEffect(() => {
+    if (token) {
+      localStorage.setItem(TOKEN_KEY, token)
+    } else {
+      localStorage.removeItem(TOKEN_KEY)
+    }
+  }, [token])
+
+  const login = (u: User, jwtToken: string) => {
+    setUser(u)
+    setToken(jwtToken)
+  }
+
+  const logout = () => {
+    setUser(null)
+    setToken(null)
+  }
+
+  const updateUser = (u: User) => {
+    setUser(u)
+  }
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isPrestador: user?.role === 'prestador', isAdmin: user?.role === 'admin', isPrestadorPendente: user?.role === 'prestador_pendente' }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        login,
+        logout,
+        updateUser,
+        isPrestador: user?.role === 'prestador',
+        isAdmin: user?.role === 'admin',
+        isPrestadorPendente: user?.role === 'prestador_pendente'
+      }}
+    >
       {children}
     </AuthContext.Provider>
   )

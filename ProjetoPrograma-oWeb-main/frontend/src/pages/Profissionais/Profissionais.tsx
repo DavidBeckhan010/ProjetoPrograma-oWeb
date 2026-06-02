@@ -55,7 +55,13 @@ export default function Profissionais() {
             {professionals.map((pro) => (
               <div key={pro.id} className={styles.card}>
                 <div className={styles.cardTop}>
-                  <div className={styles.avatar}>{getInitials(pro.name)}</div>
+                  <div className={styles.avatar}>
+                    {pro.services[0]?.provider_image ? (
+                      <img className={styles.avatarImg} src={pro.services[0].provider_image} alt={pro.name} />
+                    ) : (
+                      getInitials(pro.name)
+                    )}
+                  </div>
                   <span className={styles.verifiedBadge}>✓ Verificado</span>
                 </div>
                 <h3 className={styles.proName}>{pro.name}</h3>

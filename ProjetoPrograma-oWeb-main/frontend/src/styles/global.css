@@ -37,6 +37,16 @@
   --radius-xl: 28px;
 
   --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.08);
+
+  /* Admin dark theme */
+  --color-bg: #0b0f1a;
+  --color-text: #f1f5f9;
+  --color-text-secondary: rgba(255, 255, 255, 0.45);
+  --color-surface: #0f172a;
+  --color-border: rgba(255, 255, 255, 0.06);
+  --color-primary: #3b82f6;
+  --color-success: #10b981;
+  --transition-fast: 0.15s ease;
 }
 
 html, body {

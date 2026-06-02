@@ -2,10 +2,12 @@ import { useState, useCallback } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import {
   CreditCard, User, Calendar, Lock, ShieldCheck,
-  LoaderCircle, Zap, ChevronDown, Shield,
+  LoaderCircle, Zap, ChevronDown, Shield, Wallet, FileText, Smartphone,
 } from 'lucide-react'
 import NavBar from '../../components/NavBar/NavBar'
 import styles from './Pagamento.module.css'
+
+type PaymentMethod = 'cartao' | 'pix' | 'paypal' | 'boleto' | 'picpay'
 
 const brands = [
   { id: 'visa', label: 'Visa', prefix: '4' },
@@ -33,10 +35,19 @@ function detectBrand(number: string) {
   return null
 }
 
+const methodOptions: { id: PaymentMethod; label: string; icon: typeof CreditCard; desc: string }[] = [
+  { id: 'cartao', label: 'Cartão', icon: CreditCard, desc: 'Crédito ou débito' },
+  { id: 'pix', label: 'PIX', icon: Zap, desc: 'Pagamento instantâneo' },
+  { id: 'picpay', label: 'PicPay', icon: Smartphone, desc: 'Carteira digital' },
+  { id: 'paypal', label: 'PayPal', icon: Wallet, desc: 'Conta PayPal' },
+  { id: 'boleto', label: 'Boleto', icon: FileText, desc: 'Boleto bancário' },
+]
+
 export default function Pagamento() {
   const navigate = useNavigate()
   const location = useLocation()
-  const state = location.state as { providerName?: string; serviceName?: string } | null
+  const state = location.state as Record<string, unknown> | null
+  const [method, setMethod] = useState<PaymentMethod>('cartao')
   const [cardNumber, setCardNumber] = useState('')
   const [name, setName] = useState('')
   const [expiry, setExpiry] = useState('')
@@ -81,12 +92,20 @@ export default function Pagamento() {
     setLoading(true)
     await new Promise(r => setTimeout(r, 1500))
     setLoading(false)
-    navigate('/pagamento-realizado', { state })
+    navigate('/pagamento-realizado', { state: { ...state, paymentMethod: 'Cartão' } })
   }, [cardNumber, name, expiry, cvv, navigate, state])
 
-  const handlePix = () => {
-    navigate('/pix', { state })
-  }
+  const handleMethodAction = useCallback(() => {
+    const target: Record<PaymentMethod, string> = {
+      cartao: '',
+      pix: '/pix',
+      picpay: '/picpay',
+      paypal: '/paypal',
+      boleto: '/boleto',
+    }
+    const path = target[method]
+    if (path) navigate(path, { state })
+  }, [method, navigate, state])
 
   return (
     <div className={styles.page}>
@@ -108,129 +127,144 @@ export default function Pagamento() {
               </div>
             </div>
 
-            <form className={styles.form} onSubmit={handleSubmit}>
-              {/* Card number */}
-              <div className={styles.field}>
-                <label className={styles.label}>Número do cartão</label>
-                <div className={`${styles.inputWrapper} ${errors.card ? styles.inputError : ''}`}>
-                  <CreditCard size={18} className={styles.inputIcon} />
-                  <input
-                    className={styles.input}
-                    value={cardNumber}
-                    onChange={handleCardChange}
-                    placeholder="0000 0000 0000 0000"
-                    autoComplete="cc-number"
-                  />
-                </div>
-              </div>
+            {/* Method selector */}
+            <div className={styles.methodGrid}>
+              {methodOptions.map(m => {
+                const Icon = m.icon
+                return (
+                  <button
+                    key={m.id}
+                    type="button"
+                    className={`${styles.methodCard} ${method === m.id ? styles.methodCardActive : ''}`}
+                    onClick={() => setMethod(m.id)}
+                  >
+                    <Icon size={20} className={styles.methodIcon} />
+                    <span className={styles.methodLabel}>{m.label}</span>
+                    <span className={styles.methodDesc}>{m.desc}</span>
+                  </button>
+                )
+              })}
+            </div>
 
-              {/* Name */}
-              <div className={styles.field}>
-                <label className={styles.label}>Nome do titular</label>
-                <div className={`${styles.inputWrapper} ${errors.name ? styles.inputError : ''}`}>
-                  <User size={18} className={styles.inputIcon} />
-                  <input
-                    className={styles.input}
-                    value={name}
-                    onChange={e => { setName(e.target.value); setErrors(prev => ({ ...prev, name: false })) }}
-                    placeholder="Seu nome completo"
-                    autoComplete="cc-name"
-                  />
-                </div>
-              </div>
-
-              {/* Expiry + CVV */}
-              <div className={styles.row2}>
+            {/* Card form — only for cartão */}
+            {method === 'cartao' && (
+              <form className={styles.form} onSubmit={handleSubmit}>
                 <div className={styles.field}>
-                  <label className={styles.label}>Data de expiração</label>
-                  <div className={`${styles.inputWrapper} ${errors.expiry ? styles.inputError : ''}`}>
-                    <Calendar size={18} className={styles.inputIcon} />
+                  <label className={styles.label}>Número do cartão</label>
+                  <div className={`${styles.inputWrapper} ${errors.card ? styles.inputError : ''}`}>
+                    <CreditCard size={18} className={styles.inputIcon} />
                     <input
                       className={styles.input}
-                      value={expiry}
-                      onChange={handleExpiryChange}
-                      placeholder="MM/AA"
-                      autoComplete="cc-exp"
+                      value={cardNumber}
+                      onChange={handleCardChange}
+                      placeholder="0000 0000 0000 0000"
+                      autoComplete="cc-number"
                     />
                   </div>
                 </div>
+
                 <div className={styles.field}>
-                  <label className={styles.label}>CVV</label>
-                  <div className={`${styles.inputWrapper} ${errors.cvv ? styles.inputError : ''}`}>
-                    <Lock size={18} className={styles.inputIcon} />
+                  <label className={styles.label}>Nome do titular</label>
+                  <div className={`${styles.inputWrapper} ${errors.name ? styles.inputError : ''}`}>
+                    <User size={18} className={styles.inputIcon} />
                     <input
                       className={styles.input}
-                      value={cvv}
-                      onChange={handleCvvChange}
-                      placeholder="123"
-                      autoComplete="cc-csc"
+                      value={name}
+                      onChange={e => { setName(e.target.value); setErrors(prev => ({ ...prev, name: false })) }}
+                      placeholder="Seu nome completo"
+                      autoComplete="cc-name"
                     />
                   </div>
                 </div>
-              </div>
 
-              {/* Card Type — Segmented Control */}
-              <div className={styles.field}>
-                <label className={styles.label}>Tipo de cartão</label>
-                <div className={styles.segmented}>
-                  <button
-                    type="button"
-                    className={`${styles.segOption} ${cardType === 'credit' ? styles.segActive : ''}`}
-                    onClick={() => setCardType('credit')}
-                  >
-                    <CreditCard size={15} />
-                    Crédito
-                  </button>
-                  <button
-                    type="button"
-                    className={`${styles.segOption} ${cardType === 'debit' ? styles.segActive : ''}`}
-                    onClick={() => setCardType('debit')}
-                  >
-                    <CreditCard size={15} />
-                    Débito
+                <div className={styles.row2}>
+                  <div className={styles.field}>
+                    <label className={styles.label}>Data de expiração</label>
+                    <div className={`${styles.inputWrapper} ${errors.expiry ? styles.inputError : ''}`}>
+                      <Calendar size={18} className={styles.inputIcon} />
+                      <input
+                        className={styles.input}
+                        value={expiry}
+                        onChange={handleExpiryChange}
+                        placeholder="MM/AA"
+                        autoComplete="cc-exp"
+                      />
+                    </div>
+                  </div>
+                  <div className={styles.field}>
+                    <label className={styles.label}>CVV</label>
+                    <div className={`${styles.inputWrapper} ${errors.cvv ? styles.inputError : ''}`}>
+                      <Lock size={18} className={styles.inputIcon} />
+                      <input
+                        className={styles.input}
+                        value={cvv}
+                        onChange={handleCvvChange}
+                        placeholder="123"
+                        autoComplete="cc-csc"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className={styles.field}>
+                  <label className={styles.label}>Tipo de cartão</label>
+                  <div className={styles.segmented}>
+                    <button type="button" className={`${styles.segOption} ${cardType === 'credit' ? styles.segActive : ''}`} onClick={() => setCardType('credit')}>
+                      <CreditCard size={15} /> Crédito
+                    </button>
+                    <button type="button" className={`${styles.segOption} ${cardType === 'debit' ? styles.segActive : ''}`} onClick={() => setCardType('debit')}>
+                      <CreditCard size={15} /> Débito
+                    </button>
+                  </div>
+                </div>
+
+                <div className={styles.field}>
+                  <label className={styles.label}>Parcelamento</label>
+                  <div className={styles.selectWrapper}>
+                    <select className={styles.select} value={installment} onChange={e => setInstallment(e.target.value)}>
+                      {installments.map(inst => (
+                        <option key={inst.value} value={inst.value}>{inst.label}</option>
+                      ))}
+                    </select>
+                    <ChevronDown size={16} className={styles.selectIcon} />
+                  </div>
+                </div>
+
+                <div className={styles.btnRow}>
+                  <button className={styles.submitBtn} type="submit" disabled={loading}>
+                    {loading ? (
+                      <><LoaderCircle size={18} className={styles.spinner} /> Processando...</>
+                    ) : (
+                      <><Shield size={18} /> PAGAR</>
+                    )}
                   </button>
                 </div>
-              </div>
+              </form>
+            )}
 
-              {/* Installments */}
-              <div className={styles.field}>
-                <label className={styles.label}>Parcelamento</label>
-                <div className={styles.selectWrapper}>
-                  <select
-                    className={styles.select}
-                    value={installment}
-                    onChange={e => setInstallment(e.target.value)}
-                  >
-                    {installments.map(inst => (
-                      <option key={inst.value} value={inst.value}>{inst.label}</option>
-                    ))}
-                  </select>
-                  <ChevronDown size={16} className={styles.selectIcon} />
+            {/* Other methods — info + action */}
+            {method !== 'cartao' && (
+              <div className={styles.otherMethodBox}>
+                <div className={styles.otherMethodIcon}>
+                  {method === 'pix' && <Zap size={28} />}
+                  {method === 'picpay' && <Smartphone size={28} />}
+                  {method === 'paypal' && <Wallet size={28} />}
+                  {method === 'boleto' && <FileText size={28} />}
                 </div>
-              </div>
-
-              {/* Buttons */}
-              <div className={styles.btnRow}>
-                <button
-                  className={styles.submitBtn}
-                  type="submit"
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <><LoaderCircle size={18} className={styles.spinner} /> Processando...</>
-                  ) : (
-                    <><Shield size={18} /> PAGAR</>
-                  )}
-                </button>
-                <button
-                  className={styles.pixBtn}
-                  type="button"
-                  onClick={handlePix}
-                >
-                  <Zap size={18} /> Pagar com PIX
+                <h3 className={styles.otherMethodTitle}>
+                  {method === 'pix' ? 'Pagamento via PIX' : method === 'picpay' ? 'Pagamento via PicPay' : method === 'paypal' ? 'Pagamento via PayPal' : 'Boleto Bancário'}
+                </h3>
+                <p className={styles.otherMethodDesc}>
+                  {method === 'pix' && 'Pagamento instantâneo e seguro. O código PIX é gerado na hora.'}
+                  {method === 'picpay' && 'Redirecionamento para o ambiente seguro do PicPay.'}
+                  {method === 'paypal' && 'Redirecionamento para o ambiente seguro do PayPal.'}
+                  {method === 'boleto' && 'Gere o boleto e pague em qualquer banco ou casa lotérica.'}
+                </p>
+                <button className={styles.otherMethodBtn} onClick={handleMethodAction}>
+                  {method === 'boleto' ? 'Gerar Boleto' : `Pagar com ${methodOptions.find(m => m.id === method)?.label}`}
                 </button>
               </div>
-            </form>
+            )}
 
             {/* Security card */}
             <div className={styles.securityCard}>
@@ -246,7 +280,6 @@ export default function Pagamento() {
 
           {/* Right — Card preview + summary */}
           <div className={styles.rightCol}>
-            {/* Card 3D */}
             <div className={styles.cardPreview}>
               <div className={styles.cardShine} />
               <div className={styles.cardChip} />
@@ -265,19 +298,14 @@ export default function Pagamento() {
               </div>
             </div>
 
-            {/* Brands */}
             <div className={styles.brandsRow}>
               {brands.map(b => (
-                <span
-                  key={b.id}
-                  className={`${styles.brand} ${detectedBrand === b.id ? styles.brandActive : ''}`}
-                >
+                <span key={b.id} className={`${styles.brand} ${detectedBrand === b.id ? styles.brandActive : ''}`}>
                   {b.label}
                 </span>
               ))}
             </div>
 
-            {/* Summary */}
             <div className={styles.summary}>
               <h3 className={styles.summaryTitle}>Resumo do Pagamento</h3>
               <div className={styles.summaryRow}>

@@ -39,7 +39,7 @@ export default function PIX() {
     setLoading(true)
     await new Promise(r => setTimeout(r, 2000))
     setLoading(false)
-    navigate('/pagamento-realizado', { state })
+    navigate('/pagamento-realizado', { state: { ...state, paymentMethod: 'PIX' } })
   }, [navigate, state])
 
   const minutes = Math.floor(timeLeft / 60)

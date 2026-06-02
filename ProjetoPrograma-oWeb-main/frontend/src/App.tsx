@@ -7,6 +7,9 @@ import VerDetalhes from './pages/VerDetalhes/VerDetalhes'
 import Chat from './pages/Chat/Chat'
 import Agenda from './pages/Agenda/Agenda'
 import PIX from './pages/PIX/PIX'
+import PayPal from './pages/PayPal/PayPal'
+import Boleto from './pages/Boleto/Boleto'
+import PicPay from './pages/PicPay/PicPay'
 import Pagamento from './pages/Pagamento/Pagamento'
 import PagamentoRealizado from './pages/PagamentoRealizado/PagamentoRealizado'
 import CadastroServico from './pages/CadastroServico/CadastroServico'
@@ -37,7 +40,11 @@ export default function App() {
         <Route path="/profissionais" element={<Profissionais />} />
         <Route path="/chat" element={<Chat />} />
         <Route path="/agenda" element={<Agenda />} />
+        <Route path="/agenda/:serviceId" element={<Agenda />} />
         <Route path="/pix" element={<PIX />} />
+        <Route path="/paypal" element={<PayPal />} />
+        <Route path="/boleto" element={<Boleto />} />
+        <Route path="/picpay" element={<PicPay />} />
         <Route path="/pagamento" element={<Pagamento />} />
         <Route path="/pagamento-realizado" element={<PagamentoRealizado />} />
         <Route path="/cadastrar-servico" element={<CadastroServico />} />

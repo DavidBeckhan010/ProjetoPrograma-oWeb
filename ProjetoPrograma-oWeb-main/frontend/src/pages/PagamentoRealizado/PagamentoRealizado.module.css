@@ -355,3 +355,103 @@
   .detailValue { font-size: 13px; }
   .detailLabel { font-size: 11px; }
 }
+
+/* ── Review Section ── */
+.reviewCard {
+  width: 100%;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 1.25rem;
+  text-align: left;
+}
+
+.reviewTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 0.75rem;
+}
+
+.starRow {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 0.75rem;
+}
+
+.starBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  color: #d1d5db;
+  transition: all 0.15s;
+}
+
+.starBtn:hover {
+  transform: scale(1.15);
+}
+
+.starActive {
+  color: #f59e0b;
+}
+
+.reviewTextarea {
+  width: 100%;
+  padding: 0.75rem;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  color: #111827;
+  resize: vertical;
+  font-family: inherit;
+  margin-bottom: 0.75rem;
+  box-sizing: border-box;
+}
+
+.reviewTextarea:focus {
+  outline: none;
+  border-color: #2563ff;
+  box-shadow: 0 0 0 3px rgba(37, 99, 255, 0.1);
+}
+
+.reviewTextarea::placeholder {
+  color: #9ca3af;
+}
+
+.reviewSubmitBtn {
+  width: 100%;
+  padding: 0.625rem;
+  background: #2563ff;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.reviewSubmitBtn:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.reviewSubmitBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.reviewThanks {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.75rem 1rem;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 12px;
+  color: #065f46;
+  font-size: 0.875rem;
+  font-weight: 500;
+}

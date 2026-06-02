@@ -5,19 +5,37 @@ import type { Service } from '../../types'
 import NavBar from '../../components/NavBar/NavBar'
 import styles from './VerDetalhes.module.css'
 
-const carouselSlides = [
-  { gradient: 'linear-gradient(135deg, #2563eb, #1e40af)', icon: '🧹', label: 'Limpeza profissional' },
-  { gradient: 'linear-gradient(135deg, #059669, #047857)', icon: '🧽', label: 'Ambiente higienizado' },
-  { gradient: 'linear-gradient(135deg, #7c3aed, #6d28d9)', icon: '✨', label: 'Resultado impecável' },
-]
+interface CarouselSlide {
+  isImage: boolean;
+  url?: string;
+  gradient?: string;
+  icon?: string;
+  label: string;
+}
+
+function getCarouselSlides(product: Service): CarouselSlide[] {
+  const urls = (product.imageUrls && product.imageUrls.length > 0)
+    ? product.imageUrls
+    : (product.imageUrl ? [product.imageUrl] : []);
+  if (urls.length > 0) {
+    return urls.map((url, i) => ({
+      isImage: true,
+      url,
+      label: `${product.name} - Imagem ${i + 1}`
+    }));
+  }
+  return [
+    { isImage: false, gradient: 'linear-gradient(135deg, #2563eb, #1e40af)', icon: '📷', label: 'Imagem não disponível' },
+  ];
+}
 
 const includedItems = [
-  'Limpeza geral de ambientes',
-  'Limpeza de banheiros',
-  'Limpeza de cozinha',
-  'Aspiração de pisos e tapetes',
-  'Higienização de superfícies',
-  'Organização básica',
+  'Serviço profissional de qualidade',
+  'Atendimento personalizado',
+  'Profissional verificado',
+  'Garantia de satisfação',
+  'Orçamento sem compromisso',
+  'Suporte dedicado',
 ]
 
 function Stars({ count }: { count: number }) {
@@ -49,6 +67,7 @@ export default function VerDetalhes() {
     )
   }
 
+  const carouselSlides = getCarouselSlides(product)
   const rating = { stars: Math.min(4 + (product.id % 2), 5), count: 10 + product.id * 3 }
   const ratingNum = (4.5 + (product.id % 5) * 0.1).toFixed(1)
 
@@ -79,10 +98,17 @@ export default function VerDetalhes() {
               </button>
               <div
                 className={styles.carouselSlide}
-                style={{ background: carouselSlides[current].gradient }}
+                style={carouselSlides[current].isImage
+                  ? { backgroundImage: `url(${carouselSlides[current].url})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+                  : { background: carouselSlides[current].gradient }
+                }
               >
-                <span className={styles.carouselIcon}>{carouselSlides[current].icon}</span>
-                <span className={styles.carouselLabel}>{carouselSlides[current].label}</span>
+                {!carouselSlides[current].isImage && (
+                  <>
+                    <span className={styles.carouselIcon}>{carouselSlides[current].icon}</span>
+                    <span className={styles.carouselLabel}>{carouselSlides[current].label}</span>
+                  </>
+                )}
               </div>
               <button
                 className={`${styles.carouselArrow} ${styles.carouselArrowRight}`}
@@ -102,18 +128,23 @@ export default function VerDetalhes() {
               </div>
             </div>
             {/* Thumbnails */}
-            <div className={styles.thumbnails}>
-              {carouselSlides.map((slide, i) => (
-                <button
-                  key={i}
-                  className={`${styles.thumb} ${i === current ? styles.thumbActive : ''}`}
-                  onClick={() => setCurrent(i)}
-                  style={{ background: slide.gradient }}
-                >
-                  <span className={styles.thumbIcon}>{slide.icon}</span>
-                </button>
-              ))}
-            </div>
+            {carouselSlides.length > 1 && (
+              <div className={styles.thumbnails}>
+                {carouselSlides.map((slide, i) => (
+                  <button
+                    key={i}
+                    className={`${styles.thumb} ${i === current ? styles.thumbActive : ''}`}
+                    onClick={() => setCurrent(i)}
+                    style={slide.isImage
+                      ? { backgroundImage: `url(${slide.url})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+                      : { background: slide.gradient }
+                    }
+                  >
+                    {!slide.isImage && <span className={styles.thumbIcon}>{slide.icon}</span>}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Right - Info */}
