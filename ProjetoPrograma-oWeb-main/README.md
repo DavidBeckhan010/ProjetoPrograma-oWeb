@@ -39,6 +39,8 @@ Instale o stripe:
 scoop bucket add stripe https://github.com/stripe/scoop-stripe-cli.git scoop install stripe
 ```
 
+---
+
 ## Backend
 
 ### 1. Entrar na pasta do backend
@@ -70,6 +72,8 @@ PLATFORM_COMMISSION_PERCENT=10
 ```
 
 *OBSERVAÇÃO: SERÁ MOSTRADO MAIS ABAIXO O VALOR QUE DEVE FICAR NAS CHAVES STRIPE E COMO OBTÊ-LOS
+
+```
 
 ### 4. Gerar as migrations do banco
 
