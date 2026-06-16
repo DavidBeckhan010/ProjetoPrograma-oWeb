@@ -26,7 +26,7 @@ export interface AdminReview {
   createdAt: string;
 }
 
-const API_URL = "";
+const API_URL = "http://localhost:3333";
 
 function getAuthHeaders(token?: string | null): Record<string, string> {
   const finalToken = token || localStorage.getItem("conectserv_token");
